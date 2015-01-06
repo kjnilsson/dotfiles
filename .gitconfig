@@ -1,0 +1,14 @@
+[color]
+	ui = true
+[user]
+	name = kjnilsson
+	email = kjnilsson@gmail.com
+[push]
+	default = simple
+[diff]
+	tool = kdiff3
+[merge]
+	tool = kdiff3
+[core]
+	autocrlf = input
+	editor = vim
