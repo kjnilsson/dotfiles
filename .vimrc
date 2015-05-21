@@ -9,6 +9,7 @@ set background=dark
 set autowrite
 "no wrapping please
 set nowrap
+set hlsearch
 
 set omnifunc=syntaxcomplete#Complete
 
