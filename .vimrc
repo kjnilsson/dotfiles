@@ -9,8 +9,10 @@ set background=dark
 set autowrite
 "no wrapping please
 set nowrap
-
+set mouse=a
 set omnifunc=syntaxcomplete#Complete
+set hidden "dirty buffers
+set hlsearch
 
 set guifont=consolas:h12
 
@@ -21,52 +23,41 @@ filetype on
 filetype plugin indent on
 filetype plugin on
 
-let g:SuperTabDefaultCompletionType = "<C-X><C-O>"
+"supertab
+let g:SuperTabDefaultCompletionType = "context"
+let g:SuperTabContextDefaultCompletionType = "<C-X><C-O>"
+
+au BufNewFile,BufRead *.md,*.txt setlocal wrap
+au BufNewFile,BufRead *.md,*.txt setlocal spell
 
 let g:slime_target = "screen"
 
 if has("gui_running")
     colorscheme solarized
 else
-    colorscheme koehler
+    colorscheme desert
 endif
 
+autocmd BufNewFile,BufRead *.hs,*.lhs setlocal omnifunc=necoghc#omnifunc
 
 "Erlang settings
 let g:erlangManPath = "/usr/local/opt/erlang/lib/erlang/man"
 
 "Syntastic settings
 let g:syntastic_check_on_open = 1
-
+let g:syntastic_enable_balloons = 1
+let g:syntastic_mode_map = {
+    \ "mode": "active",
+    \ "active_filetypes": [],
+    \ "passive_filetypes": ["erlang"] }
 
 "fsharp settings
 let g:fsharpbinding_debug = 1
-let g:syntastic_enable_balloons = 1
-"commentary settings
-"autocmd FileType fsharp set commentstring=\\ %s
-" let b:fsharp_buffer_changed = 0
-" augroup fsharp_au
-"    au!
-"    au CursorHold *.fs,*.fsi,*.fsx call OnCursorHold()
-"    au TextChanged *.fs,*.fsi,*.fsx call OnTextChanged()
-"    au TextChangedI *.fs,*.fsi,*.fsx call OnTextChanged()
-"    au BufEnter *.fs,*.fsi,*.fsx call OnBufEnter()
-" augroup END
+let g:fsharp_completion_helptext = 1
+let g:fsharp_test_runner = "/Users/karlnilsson/code/util/testrunners/nunit-console.exe"
 
-" function! OnBufEnter()
-"     "is there a nice way to just set this for fsharp files?
-"     set updatetime=750
-" endfunction
+:command JsonFormat exec '%!python -m json.tool'
 
-" function! OnCursorHold()
-"     if exists ("b:fsharp_buffer_changed") != 0 
-"         if b:fsharp_buffer_changed == 1
-"             exec "SyntasticCheck"
-"         endif
-"     endif
-"     let b:fsharp_buffer_changed = 0
-" endfunction
-
-" function! OnTextChanged()
-"     let b:fsharp_buffer_changed = 1
-" endfunction
+"dash
+nmap <silent> <leader>q <Plug>DashSearch
+vmap <silent> <leader>q <Plug>DashSearch
