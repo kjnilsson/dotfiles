@@ -10,6 +10,7 @@ set autowrite
 "no wrapping please
 set nowrap
 set mouse=a
+
 set omnifunc=syntaxcomplete#Complete
 set hidden "dirty buffers
 set hlsearch
