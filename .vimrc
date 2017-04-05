@@ -78,7 +78,7 @@ let g:fsharpbinding_debug = 1
 let g:fsharp_completion_helptext = 1
 let g:fsharp_test_runner = "/Users/karlnilsson/code/util/testrunners/nunit-console.exe"
 
-:command JsonFormat exec '%!python -m json.tool'
+:command! JsonFormat exec '%!python -m json.tool'
 
 "dash
 nmap <silent> <leader>q <Plug>DashSearch
@@ -92,6 +92,13 @@ endif
 set exrc
 set secure
 
+"run all eunit tests in the current buffer
 command! Eunit execute "make! eunit EUNIT_MODS=" . expand('%:t:r') . " SKIP_DEPS=true"
+"run entire common test suite
 command! CtSuite execute "make! ct-" . expand('%:t:r') . " SKIP_DEPS=true"
+"run specific common test group:test
 command! -nargs=1 Ct execute "make! ct-" . substitute(expand('%:t:r'), "_SUITE", "", "") "t=" . <q-args> "SKIP_DEPS=true"
+
+augroup erlang_commands
+    autocmd Filetype erlang nnoremap <buffer> <leader>e :Eunit<cr>
+augroup END
