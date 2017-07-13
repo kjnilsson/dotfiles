@@ -1,4 +1,3 @@
-set smartindent
 set tabstop=4
 set shiftwidth=4
 set expandtab
@@ -77,6 +76,9 @@ let g:syntastic_python_python_exec = 'python3'
 let g:fsharpbinding_debug = 1
 let g:fsharp_completion_helptext = 1
 let g:fsharp_test_runner = "/Users/karlnilsson/code/util/testrunners/nunit-console.exe"
+let g:airline#extensions#branch#enabled = 0
+
+"erlang
 
 :command! JsonFormat exec '%!python -m json.tool'
 
@@ -92,6 +94,9 @@ endif
 set exrc
 set secure
 
+" the old regex engine seems faster
+set re=1
+
 "run all eunit tests in the current buffer
 command! Eunit execute "make! eunit EUNIT_MODS=" . expand('%:t:r') . " SKIP_DEPS=true"
 "run entire common test suite
@@ -99,6 +104,7 @@ command! CtSuite execute "make! ct-" . expand('%:t:r') . " SKIP_DEPS=true"
 "run specific common test group:test
 command! -nargs=1 Ct execute "make! ct-" . substitute(expand('%:t:r'), "_SUITE", "", "") "t=" . <q-args> "SKIP_DEPS=true"
 
+command Profile execute "profile start prof.log | profile func * | profile file *"
 augroup erlang_commands
     autocmd Filetype erlang nnoremap <buffer> <leader>e :Eunit<cr>
 augroup END
