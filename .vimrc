@@ -59,6 +59,8 @@ let g:OmniSharp_server_type = 'roslyn'
 "Erlang settings
 let g:erlangManPath = "/usr/local/opt/erlang/lib/erlang/man"
 
+let g:erlang_tags_ignore = ['_rel', 'rel']
+
 "Syntastic settings
 let g:syntastic_elixir_checkers = ['elixir']
 let g:syntastic_enable_elixir_checker = 1
@@ -72,6 +74,7 @@ let g:syntastic_mode_map = {
 let g:syntastic_cs_checkers = ['syntax', 'semantic', 'issues']
 let g:syntastic_fsharp_checkers = ['syntax']
 let g:syntastic_python_python_exec = 'python3'
+let g:syntastic_always_populate_loc_list = 1
 "fsharp settings
 let g:fsharpbinding_debug = 1
 let g:fsharp_completion_helptext = 1
@@ -98,13 +101,17 @@ set secure
 set re=1
 
 "run all eunit tests in the current buffer
-command! Eunit execute "make! eunit EUNIT_MODS=" . expand('%:t:r') . " SKIP_DEPS=true"
+command! Eunit execute "make! eunit EUNIT_MODS=\\'" . expand('%:t:r') . "\\' SKIP_DEPS=true"
 "run entire common test suite
 command! CtSuite execute "make! ct-" . expand('%:t:r') . " SKIP_DEPS=true"
 "run specific common test group:test
 command! -nargs=1 Ct execute "make! ct-" . substitute(expand('%:t:r'), "_SUITE", "", "") "t=" . <q-args> "SKIP_DEPS=true"
 
-command Profile execute "profile start prof.log | profile func * | profile file *"
+command! Profile execute "profile start prof.log | profile func * | profile file *"
 augroup erlang_commands
     autocmd Filetype erlang nnoremap <buffer> <leader>e :Eunit<cr>
 augroup END
+
+" TLA+
+command! PcalTrans execute "!java -cp ~/tla pcal.trans " . expand('%')
+command! TLCModelCheck execute "!java tlc2.TLC -modelcheck " . expand('%')
