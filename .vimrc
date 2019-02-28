@@ -21,6 +21,9 @@ set splitbelow
 
 set termguicolors
 
+
+set cm=blowfish2
+
 let $NVIM_TUI_ENABLE_TRUE_COLOR=1
 
 execute pathogen#infect()
@@ -100,16 +103,44 @@ set secure
 " the old regex engine seems faster
 set re=1
 
+function! ErlangCurrentFunction()
+    let ln = search('^[a-z].*(', 'nb')
+    if ln
+        " extract function name from line
+        let m = matchstr(getline(ln), '^.*\ze(')
+        return m
+    endif
+endfunction
+
+function! ErlangSuiteName()
+    let suite_name = substitute(expand('%:t:r'), '_SUITE', '', '')
+    return suite_name
+endfunction
+
+function! ErlangCtCurrentEx()
+    if !exists("b:ct_group")
+        let b:ct_group = input('Enter Ct Group: ')
+    endif
+    let suite_name = ErlangSuiteName()
+    let current_function = ErlangCurrentFunction()
+    let tail = suite_name . " t=" . b:ct_group . ":" . current_function "SKIP_DEPS=true"
+    return "make! ct-" . tail
+endfunction
+
 "run all eunit tests in the current buffer
 command! Eunit execute "make! eunit EUNIT_MODS=\\'" . expand('%:t:r') . "\\' SKIP_DEPS=true"
 "run entire common test suite
-command! CtSuite execute "make! ct-" . expand('%:t:r') . " SKIP_DEPS=true"
+command! CtSuite execute "make! ct-" . ErlangSuiteName() . " SKIP_DEPS=true"
 "run specific common test group:test
-command! -nargs=1 Ct execute "make! ct-" . substitute(expand('%:t:r'), "_SUITE", "", "") "t=" . <q-args> "SKIP_DEPS=true"
+command! -nargs=1 Ct execute "make! ct-" . ErlangSuiteName() "t=" . <q-args> "SKIP_DEPS=true"
+command! -nargs=1 CtCur execute "make! ct-" . ErlangSuiteName() "t=" . <q-args> . ":" . ErlangCurrentFunction() "SKIP_DEPS=true"
+command! CtCur2 execute ErlangCtCurrentEx()
 
 command! Profile execute "profile start prof.log | profile func * | profile file *"
+
 augroup erlang_commands
     autocmd Filetype erlang nnoremap <buffer> <leader>e :Eunit<cr>
+    autocmd Filetype erlang nnoremap <buffer> <leader>c :CtCur2<cr>
 augroup END
 
 " TLA+
