@@ -127,20 +127,31 @@ function! ErlangCtCurrentEx()
     return "make! ct-" . tail
 endfunction
 
+function! ErlangCt(...)
+    if a:0
+        " we have passed an argument and is running part of a suite
+        " (group:test)
+        echom "we have an argment" a:1
+        return "make! ct-" . ErlangSuiteName() . " t=" . a:1 "SKIP_DEPS=true"
+    else
+        " run the whole suite
+        return "make! ct-" . ErlangSuiteName() "SKIP_DEPS=true"
+    endif
+endfunction
+
 "run all eunit tests in the current buffer
 command! Eunit execute "make! eunit EUNIT_MODS=\\'" . expand('%:t:r') . "\\' SKIP_DEPS=true"
 "run entire common test suite
 command! CtSuite execute "make! ct-" . ErlangSuiteName() . " SKIP_DEPS=true"
 "run specific common test group:test
-command! -nargs=1 Ct execute "make! ct-" . ErlangSuiteName() "t=" . <q-args> "SKIP_DEPS=true"
-command! -nargs=1 CtCur execute "make! ct-" . ErlangSuiteName() "t=" . <q-args> . ":" . ErlangCurrentFunction() "SKIP_DEPS=true"
-command! CtCur2 execute ErlangCtCurrentEx()
+command! -nargs=? Ct execute ErlangCt(<q-args>)
+command! CtCur execute ErlangCtCurrentEx()
 
 command! Profile execute "profile start prof.log | profile func * | profile file *"
 
 augroup erlang_commands
     autocmd Filetype erlang nnoremap <buffer> <leader>e :Eunit<cr>
-    autocmd Filetype erlang nnoremap <buffer> <leader>c :CtCur2<cr>
+    autocmd Filetype erlang nnoremap <buffer> <leader>c :CtCur<cr>
 augroup END
 
 " TLA+
