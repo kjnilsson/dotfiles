@@ -141,10 +141,10 @@ endfunction
 
 "run all eunit tests in the current buffer
 command! Eunit execute "make! eunit EUNIT_MODS=\\'" . expand('%:t:r') . "\\' SKIP_DEPS=true"
-"run entire common test suite
-command! CtSuite execute "make! ct-" . ErlangSuiteName() . " SKIP_DEPS=true"
-"run specific common test group:test
+"run entire common test suite if no arguments are provided
+"or runs specific common test group:test with a single argument
 command! -nargs=? Ct execute ErlangCt(<q-args>)
+" try to execute the current function as a Ct test
 command! CtCur execute ErlangCtCurrentEx()
 
 command! Profile execute "profile start prof.log | profile func * | profile file *"
