@@ -75,15 +75,19 @@ let g:syntastic_mode_map = {
     \ "active_filetypes": [],
     \ "passive_filetypes": ["erlang"] }
 let g:syntastic_cs_checkers = ['syntax', 'semantic', 'issues']
-let g:syntastic_fsharp_checkers = ['syntax']
+" let g:syntastic_fsharp_checkers = ['syntax']
 let g:syntastic_python_python_exec = 'python3'
 let g:syntastic_always_populate_loc_list = 1
 "fsharp settings
-let g:fsharpbinding_debug = 1
-let g:fsharp_completion_helptext = 1
-let g:fsharp_test_runner = "/Users/karlnilsson/code/util/testrunners/nunit-console.exe"
+let g:fsharp#linter = 0
+" let g:fsharpbinding_debug = 1
+" let g:fsharp_completion_helptext = 1
+" let g:fsharp_test_runner = "/Users/karlnilsson/code/util/testrunners/nunit-console.exe"
 let g:airline#extensions#branch#enabled = 0
 
+" let g:LanguageClient_serverCommands = {
+"   \ 'fsharp': g:fsharp#languageserver_command
+"   \ }
 "erlang
 
 :command! JsonFormat exec '%!python -m json.tool'
@@ -124,7 +128,7 @@ function! ErlangCtCurrentEx()
     let suite_name = ErlangSuiteName()
     let current_function = ErlangCurrentFunction()
     let tail = suite_name . " t=" . b:ct_group . ":" . current_function "SKIP_DEPS=true"
-    return "make! ct-" . tail
+    return "!gmake ct-" . tail
 endfunction
 
 function! ErlangCt(...)
@@ -132,15 +136,15 @@ function! ErlangCt(...)
         " we have passed an argument and is running part of a suite
         " (group:test)
         echom "we have an argment" a:1
-        return "make! ct-" . ErlangSuiteName() . " t=" . a:1 "SKIP_DEPS=true"
+        return "!gmake ct-" . ErlangSuiteName() . " t=" . a:1 "SKIP_DEPS=true"
     else
         " run the whole suite
-        return "make! ct-" . ErlangSuiteName() "SKIP_DEPS=true"
+        return "!gmake ct-" . ErlangSuiteName() "SKIP_DEPS=true"
     endif
 endfunction
 
 "run all eunit tests in the current buffer
-command! Eunit execute "make! eunit EUNIT_MODS=\\'" . expand('%:t:r') . "\\' SKIP_DEPS=true"
+command! Eunit execute "!gmake eunit EUNIT_MODS=\\'" . expand('%:t:r') . "\\' SKIP_DEPS=true"
 "run entire common test suite if no arguments are provided
 "or runs specific common test group:test with a single argument
 command! -nargs=? Ct execute ErlangCt(<q-args>)
