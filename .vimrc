@@ -1,3 +1,76 @@
+call plug#begin('~/.config/nvim/plugged')
+
+" Plugins {
+  " airline is a better status line and a tab-bar for nvim.
+  Plug 'vim-airline/vim-airline'
+  Plug 'vim-airline/vim-airline-themes'
+  " gruvbox colorscheme. Seems to work the best for me.
+  Plug 'morhetz/gruvbox'
+  Plug 'tpope/vim-fugitive'
+  Plug 'tpope/vim-commentary'
+  Plug 'tpope/vim-vinegar'
+  Plug 'tpope/vim-rhubarb'
+  Plug 'neovim/nvim-lspconfig'
+  Plug 'ervandew/supertab'
+  Plug 'ntpeters/vim-better-whitespace'
+
+  "
+" }
+"
+call plug#end()
+
+lua << EOF
+local lspconfig = require'lspconfig'
+local configs = require'lspconfig/configs'
+local custom_lsp_attach = function(client)
+    local function buf_set_keymap(...) vim.api.nvim_buf_set_keymap(bufnr, ...) end
+    local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
+    -- See `:help nvim_buf_set_keymap()` for more information
+    -- local opts =  {noremap = true, silent = true}
+    local opts =  {noremap = true}
+    buf_set_keymap('n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', opts)
+    buf_set_keymap('n', '<c-]>', '<cmd>lua vim.lsp.buf.definition()<CR>', opts)
+    -- ... and other keymappings for LSP
+    buf_set_keymap('n', '[d', '<cmd>lua vim.lsp.diagnostic.goto_prev()<CR>', opts)
+    buf_set_keymap('n', ']d', '<cmd>lua vim.lsp.diagnostic.goto_next()<CR>', opts)
+    buf_set_keymap('n', '<space>q', '<cmd>lua vim.lsp.diagnostic.set_loclist()<CR>', opts)
+    buf_set_keymap('n', '<space>D', '<cmd>lua vim.lsp.buf.type_definition()<CR>', opts)
+    buf_set_keymap('n', '<space>rn', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
+    buf_set_keymap('n', '<space>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
+    buf_set_keymap('n', '<C-k>', '<cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
+    buf_set_keymap('n', '<space>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
+    buf_set_keymap('n', '<space>e', '<cmd>lua vim.lsp.diagnostic.show_line_diagnostics()<CR>', opts)
+
+    -- Use LSP as the handler for omnifunc.
+    --    See `:help omnifunc` and `:help ins-completion` for more information.
+    buf_set_option('omnifunc', 'v:lua.vim.lsp.omnifunc')
+
+    -- For plugins
+    -- require('completion').on_attach()
+end
+-- Check if it's already defined for when reloading this file.
+if not lspconfig.erlang_lsp then
+    configs.erlang_lsp = {
+        default_config = {
+            cmd = {'erlang_ls'};
+            filetypes = {'erlang'};
+            root_dir = function(fname)
+              return lspconfig.util.find_git_ancestor(fname) or fname
+            end;
+            settings = {},
+            on_attach = custom_lsp_attach
+            };
+        }
+end
+lspconfig.erlang_lsp.setup{}
+
+require'lspconfig'.fsautocomplete.setup{
+    cmd = {'dotnet', '/Users/nkarl/bin/fsautocomplete.netcore/fsautocomplete.dll', '--background-service-enabled'};
+    on_attach = custom_lsp_attach
+}
+EOF
+
+
 set tabstop=4
 set shiftwidth=4
 set expandtab
@@ -10,7 +83,6 @@ set autowrite
 set nowrap
 set mouse=a
 
-set omnifunc=syntaxcomplete#Complete
 set hidden "dirty buffers
 set hlsearch
 
@@ -22,11 +94,9 @@ set splitbelow
 set termguicolors
 
 
-set cm=blowfish2
-
 let $NVIM_TUI_ENABLE_TRUE_COLOR=1
 
-execute pathogen#infect()
+"execute pathogen#infect()
 syntax on
 filetype on
 filetype plugin indent on
@@ -39,8 +109,6 @@ let g:SuperTabContextDefaultCompletionType = "<C-X><C-O>"
 au BufNewFile,BufRead *.md,*.txt setlocal wrap
 au BufNewFile,BufRead *.md,*.txt setlocal spell
 
-let g:slime_target = "screen"
-
 let g:airline_powerline_fonts = 1
 
 if has("gui_running")
@@ -52,6 +120,8 @@ else
     let g:gruvbox_italic=1
     let g:gruvbox_contrast_dark='hard'
 endif
+
+autocmd BufNewFile,BufRead *.fs,*.fsx,*.fsi set filetype=fsharp
 
 autocmd BufNewFile,BufRead *.hs,*.lhs setlocal omnifunc=necoghc#omnifunc
 " enable ejs support
@@ -92,9 +162,6 @@ let g:airline#extensions#branch#enabled = 0
 
 :command! JsonFormat exec '%!python -m json.tool'
 
-"dash
-nmap <silent> <leader>q <Plug>DashSearch
-vmap <silent> <leader>q <Plug>DashSearch
 
 set noerrorbells visualbell t_vb=
 if has('autocmd')
@@ -105,7 +172,7 @@ set exrc
 set secure
 
 " the old regex engine seems faster
-set re=1
+" set re=1
 
 function! ErlangCurrentFunction()
     let ln = search('^[a-z].*(', 'nb')
@@ -114,6 +181,12 @@ function! ErlangCurrentFunction()
         let m = matchstr(getline(ln), '^.*\ze(')
         return m
     endif
+endfunction
+
+function! CtGmake(cmd)
+    " assumes standard erlang.mk setup
+    let ct_dir = expand('%:p:h:h')
+    return "!gmake -C " . ct_dir . " " . a:cmd
 endfunction
 
 function! ErlangSuiteName()
@@ -127,8 +200,8 @@ function! ErlangCtCurrentEx()
     endif
     let suite_name = ErlangSuiteName()
     let current_function = ErlangCurrentFunction()
-    let tail = suite_name . " t=" . b:ct_group . ":" . current_function "SKIP_DEPS=true"
-    return "!gmake ct-" . tail
+    let cmd = "ct-" . suite_name . " t=" . b:ct_group . ":" . current_function "SKIP_DEPS=true"
+    return CtGmake(cmd)
 endfunction
 
 function! ErlangCt(...)
@@ -136,10 +209,12 @@ function! ErlangCt(...)
         " we have passed an argument and is running part of a suite
         " (group:test)
         echom "we have an argment" a:1
-        return "!gmake ct-" . ErlangSuiteName() . " t=" . a:1 "SKIP_DEPS=true"
+        let cmd = "ct-" . ErlangSuiteName() . " t=" . a:1 "SKIP_DEPS=true"
+        return CtGmake(cmd)
     else
         " run the whole suite
-        return "!gmake ct-" . ErlangSuiteName() "SKIP_DEPS=true"
+        let cmd  = "ct-" . ErlangSuiteName() "SKIP_DEPS=true"
+        return CtGmake(cmd)
     endif
 endfunction
 
