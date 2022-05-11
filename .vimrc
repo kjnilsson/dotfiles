@@ -22,7 +22,7 @@ call plug#end()
 lua << EOF
 local lspconfig = require'lspconfig'
 local configs = require'lspconfig/configs'
-local custom_lsp_attach = function(client)
+local custom_lsp_attach = function(client, bufnr)
     local function buf_set_keymap(...) vim.api.nvim_buf_set_keymap(bufnr, ...) end
     local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
     -- See `:help nvim_buf_set_keymap()` for more information
@@ -49,23 +49,30 @@ local custom_lsp_attach = function(client)
     -- require('completion').on_attach()
 end
 -- Check if it's already defined for when reloading this file.
-if not lspconfig.erlang_lsp then
-    configs.erlang_lsp = {
-        default_config = {
-            cmd = {'erlang_ls'};
-            filetypes = {'erlang'};
-            root_dir = function(fname)
-              return lspconfig.util.find_git_ancestor(fname) or fname
-            end;
-            settings = {},
-            on_attach = custom_lsp_attach
-            };
-        }
-end
-lspconfig.erlang_lsp.setup{}
+-- if not lspconfig.erlangls then
+-- configs.erlangls = {
+--         default_config = {
+--           cmd = {'erlang_ls'};
+           --  filetypes = {'erlang'};
+            -- root_dir = function(fname)
+              -- return lspconfig.util.find_git_ancestor(fname) or fname
+--             end;
+--             settings = {},
+--             on_attach = custom_lsp_attach
+--             };
+--         }
+-- end
+-- lspconfig.erlangls.setup{}
+
+require'lspconfig'.erlangls.setup{
+    on_attach = custom_lsp_attach
+}
 
 require'lspconfig'.fsautocomplete.setup{
     cmd = {'dotnet', '/Users/nkarl/bin/fsautocomplete.netcore/fsautocomplete.dll', '--background-service-enabled'};
+    root_dir = function(fname)
+        return lspconfig.util.find_git_ancestor(fname) or fname
+    end;
     on_attach = custom_lsp_attach
 }
 EOF
