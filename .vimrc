@@ -13,6 +13,8 @@ call plug#begin('~/.config/nvim/plugged')
   Plug 'neovim/nvim-lspconfig'
   Plug 'ervandew/supertab'
   Plug 'ntpeters/vim-better-whitespace'
+  Plug 'elixir-editors/vim-elixir'
+  Plug 'ionide/Ionide-vim'
 
   "
 " }
@@ -31,15 +33,15 @@ local custom_lsp_attach = function(client, bufnr)
     buf_set_keymap('n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', opts)
     buf_set_keymap('n', '<c-]>', '<cmd>lua vim.lsp.buf.definition()<CR>', opts)
     -- ... and other keymappings for LSP
-    buf_set_keymap('n', '[d', '<cmd>lua vim.lsp.diagnostic.goto_prev()<CR>', opts)
-    buf_set_keymap('n', ']d', '<cmd>lua vim.lsp.diagnostic.goto_next()<CR>', opts)
+    buf_set_keymap('n', '[d', '<cmd>lua vim.diagnostic.goto_prev()<CR>', opts)
+    buf_set_keymap('n', ']d', '<cmd>lua vim.diagnostic.goto_next()<CR>', opts)
     buf_set_keymap('n', '<space>q', '<cmd>lua vim.lsp.diagnostic.set_loclist()<CR>', opts)
     buf_set_keymap('n', '<space>D', '<cmd>lua vim.lsp.buf.type_definition()<CR>', opts)
     buf_set_keymap('n', '<space>rn', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
     buf_set_keymap('n', '<space>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
     buf_set_keymap('n', '<C-k>', '<cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
     buf_set_keymap('n', '<space>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
-    buf_set_keymap('n', '<space>e', '<cmd>lua vim.lsp.diagnostic.show_line_diagnostics()<CR>', opts)
+    buf_set_keymap('n', '<space>e', '<cmd>lua vim.diagnostic.open_float()<CR>', opts)
 
     -- Use LSP as the handler for omnifunc.
     --    See `:help omnifunc` and `:help ins-completion` for more information.
@@ -65,16 +67,16 @@ end
 -- lspconfig.erlangls.setup{}
 
 require'lspconfig'.erlangls.setup{
-    on_attach = custom_lsp_attach
+    -- cmd = {'erlang_ls', '--log-level=debug'};
+    on_attach = custom_lsp_attach;
+    root_dir = lspconfig.util.find_git_ancestor
 }
 
 require'lspconfig'.fsautocomplete.setup{
-    cmd = {'dotnet', '/Users/nkarl/bin/fsautocomplete.netcore/fsautocomplete.dll', '--background-service-enabled'};
-    root_dir = function(fname)
-        return lspconfig.util.find_git_ancestor(fname) or fname
-    end;
-    on_attach = custom_lsp_attach
+    on_attach = custom_lsp_attach;
+    root_dir = lspconfig.util.root_pattern('*.sln', '.git', '*.fsproj')
 }
+
 EOF
 
 
@@ -99,6 +101,7 @@ set splitright
 set splitbelow
 
 set termguicolors
+set encoding=utf-8
 
 
 let $NVIM_TUI_ENABLE_TRUE_COLOR=1
@@ -117,6 +120,24 @@ au BufNewFile,BufRead *.md,*.txt setlocal wrap
 au BufNewFile,BufRead *.md,*.txt setlocal spell
 
 let g:airline_powerline_fonts = 1
+let g:airline_left_sep=''
+let g:airline_right_sep=''
+if !exists('g:airline_symbols')
+    let g:airline_symbols = {}
+endif
+" unicode symbols
+let g:airline_left_sep = '»'
+let g:airline_left_sep = '▶'
+let g:airline_right_sep = '«'
+let g:airline_right_sep = '◀'
+let g:airline_symbols.linenr = '␊'
+let g:airline_symbols.linenr = '␤'
+let g:airline_symbols.linenr = '¶'
+let g:airline_symbols.branch = '⎇'
+let g:airline_symbols.paste = 'ρ'
+let g:airline_symbols.paste = 'Þ'
+let g:airline_symbols.paste = '∥'
+let g:airline_symbols.whitespace = 'Ξ'
 
 if has("gui_running")
     colorscheme solarized
@@ -160,7 +181,7 @@ let g:fsharp#linter = 0
 " let g:fsharpbinding_debug = 1
 " let g:fsharp_completion_helptext = 1
 " let g:fsharp_test_runner = "/Users/karlnilsson/code/util/testrunners/nunit-console.exe"
-let g:airline#extensions#branch#enabled = 0
+let g:airline#extensions#branch#enabled = 1
 
 " let g:LanguageClient_serverCommands = {
 "   \ 'fsharp': g:fsharp#languageserver_command
