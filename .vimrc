@@ -4,8 +4,8 @@ call plug#begin('~/.config/nvim/plugged')
   " airline is a better status line and a tab-bar for nvim.
   Plug 'vim-airline/vim-airline'
   Plug 'vim-airline/vim-airline-themes'
-  " gruvbox colorscheme. Seems to work the best for me.
-  Plug 'morhetz/gruvbox'
+  " Plug 'kjnilsson/gruvbox'
+  Plug 'ellisonleao/gruvbox.nvim'
   Plug 'tpope/vim-fugitive'
   Plug 'tpope/vim-commentary'
   Plug 'tpope/vim-vinegar'
@@ -40,7 +40,6 @@ local custom_lsp_attach = function(client, bufnr)
     buf_set_keymap('n', '<space>rn', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
     buf_set_keymap('n', '<space>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
     buf_set_keymap('n', '<C-k>', '<cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
-    buf_set_keymap('n', '<space>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
     buf_set_keymap('n', '<space>e', '<cmd>lua vim.diagnostic.open_float()<CR>', opts)
 
     -- Use LSP as the handler for omnifunc.
@@ -74,8 +73,36 @@ require'lspconfig'.erlangls.setup{
 
 require'lspconfig'.fsautocomplete.setup{
     on_attach = custom_lsp_attach;
-    root_dir = lspconfig.util.root_pattern('*.sln', '.git', '*.fsproj')
+    root_dir = lspconfig.util.root_pattern('*.sln', '.git', '*.fsproj');
+    cmd = { "fsautocomplete", "--adaptive-lsp-server-enabled" };
+    init_options = { AutomaticWorkspaceInit = true }
 }
+
+-- Default options:
+require("gruvbox").setup({
+  terminal_colors = true, -- add neovim terminal colors
+  undercurl = true,
+  underline = true,
+  bold = true,
+  italic = {
+    strings = false,
+    emphasis = false,
+    comments = false,
+    operators = false,
+    folds = false,
+  },
+  strikethrough = true,
+  invert_selection = false,
+  invert_signs = false,
+  invert_tabline = false,
+  invert_intend_guides = false,
+  inverse = true, -- invert background for search, diffs, statuslines and errors
+  contrast = "", -- can be "hard", "soft" or empty string
+  palette_overrides = {},
+  overrides = {},
+  dim_inactive = false,
+  transparent_mode = false,
+})
 
 EOF
 
@@ -126,6 +153,7 @@ if !exists('g:airline_symbols')
     let g:airline_symbols = {}
 endif
 " unicode symbols
+"
 let g:airline_left_sep = '»'
 let g:airline_left_sep = '▶'
 let g:airline_right_sep = '«'
@@ -138,15 +166,12 @@ let g:airline_symbols.paste = 'ρ'
 let g:airline_symbols.paste = 'Þ'
 let g:airline_symbols.paste = '∥'
 let g:airline_symbols.whitespace = 'Ξ'
+let g:airline#extensions#branch#displayed_head_limit = 10
 
-if has("gui_running")
+if &diff
     colorscheme solarized
-elseif &diff
-    colorscheme blue
 else
     colorscheme gruvbox
-    let g:gruvbox_italic=1
-    let g:gruvbox_contrast_dark='hard'
 endif
 
 autocmd BufNewFile,BufRead *.fs,*.fsx,*.fsi set filetype=fsharp
